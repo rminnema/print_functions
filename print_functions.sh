@@ -12,8 +12,9 @@ print_function_definition() {
     )
     trap 'rm -f "$processed_file"' RETURN
     [[ "$file" && "$function" ]] || return 1
-    processed_file=$(mktemp)
+    local processed_file; processed_file=$(mktemp)
     process_file < "$file" > "$processed_file"
+    local start_line start_lineno
     if start_line=$(grep -En "(^|[^\w])$function\s*\(\s*\)" "$processed_file") ||
        start_line=$(grep -En "^\s*function\s+$function" "$processed_file")
     then
@@ -23,10 +24,11 @@ print_function_definition() {
         return 1
     fi
 
-    start_token=$(find_start_token)
-    end_token=${end_tokens[$start_token]}
-    start_tokens_seen=0
-    end_tokens_seen=0
+    local start_token; start_token=$(find_start_token "$processed_file" "$start_lineno")
+    local end_token; end_token=${end_tokens[$start_token]}
+    local start_tokens_seen=0
+    local end_tokens_seen=0
+    local tokens
     while IFS='' read -r line; do
         echo "$line"
         IFS=$' \t\n'
@@ -45,11 +47,11 @@ print_function_definition() {
 }
 
 process_file() {
-    local concatenated_lines character line
+    local concatenated_lines char line
     IFS=''
     while read -r line; do
-        #if grep -Eq '(^|[^\\])\\$' <<< "$line"; then
-        if [[ "$line" =~ '(^|[^\\])\\$' ]]; then
+        read line_suppressed_backslash <<< "$line"
+        if [[ "${line: -1}" == '\' && "${line_suppressed_backslash: -1}" != '\' ]]; then
             concatenated_lines+="${line::-1}"
             char='\'
         else
@@ -74,6 +76,8 @@ process_tokens_in_line() {
 
 find_start_token() {
     local first_token
+    local processed_file=$1
+    local start_lineno=$2
     local line
     while read -r line; do
         first_token=$(echo "$line" | process_tokens_in_line | head -n 1)
