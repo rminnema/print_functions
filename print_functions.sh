@@ -85,7 +85,7 @@ find_start_token() {
     local start_lineno=$2
     local line
     while read -r line; do
-        first_token=$(echo "$line" | process_tokens_in_line | head -n 1)
+        first_token=$(process_tokens_in_line <<< "$line" | head -n 1)
         [[ "$first_token" ]] && break
     done < <(tail -n +"$start_lineno" "$processed_file")
     echo "$first_token"
