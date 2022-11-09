@@ -1,9 +1,14 @@
 #!/bin/bash
 
 
-# We're not interested in anything inside quotes, anything after unbalanced quotes, and anything commented out
+# We're not interested in anything escaped, anything inside quotes, anything after unbalanced quotes, and anything commented out
 clean_string() {
-    echo "$*" | sed -r -e 's/(\w|\\|^)#.*/\1/g' -e 's/\(\s*\)//g'
+    echo "$*" | sed -r \
+                    -e 's/\\(.|$)//g' \
+                    -e 's/"[^"]*"//g' \
+                    -e "s/'[^']*'//g" \
+                    -e 's/(\w|^)#.*/\1/g' \
+                    -e 's/\(\s*\)//g'
 }
 
 print_function_definition() {
