@@ -101,5 +101,6 @@ if [[ "$function" ]]; then
 elif [[ "$file" ]]; then
     print_function_names
 else
+    echo "Usage: $(basename $0) FILE [FUNCTION]" >&2
     exit 1
 fi
