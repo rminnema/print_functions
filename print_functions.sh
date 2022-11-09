@@ -15,7 +15,7 @@ print_function_definition() {
     local processed_file; processed_file=$(mktemp)
     process_file < "$file" > "$processed_file"
     local start_line start_lineno
-    if start_line=$(grep -En "(^|[^\w])$function\s*\(\s*\)" "$processed_file") ||
+    if start_line=$(grep -En "(^|[^\w_])$function\s*\(\s*\)" "$processed_file") ||
        start_line=$(grep -En "^\s*function\s+$function" "$processed_file")
     then
         start_lineno=$(cut -d : -f 1 <<< "$start_line")
